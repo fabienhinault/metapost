@@ -4,50 +4,43 @@ outputformatoptions := "format=rgb antialias=best";
 hppp := 0.1;
 vppp := 0.1;
 
+markinglength := 1mm;
+color axiscolor;
+axiscolor = 0.5 white;
+
+def draw_axes(expr xmin, xmax, ymin, ymax) =
+  drawarrow (xmin, 0)--(xmax, 0) withcolor axiscolor;
+  drawarrow (0, ymin)--(0, ymax) withcolor axiscolor;
+  label.top(btex $x$ etex, (xmax, 0));
+  label.rt(btex $y$ etex, (0, ymax));
+enddef;
+
+def draw_axes_iso(expr min, max) =
+  draw_axes(min, max, min, max);
+enddef;
+
+% markings at dist and -dist on each axis.
+def draw_ruler_four_dots(expr dist, labelpos, labelneg) =
+  draw (0, dist)--(markinglength, dist) withcolor axiscolor;
+  draw (0, -dist)--(markinglength, -dist) withcolor axiscolor;
+  draw (dist, 0)--(dist, markinglength) withcolor axiscolor;
+  draw (-dist, 0)--(-dist, markinglength) withcolor axiscolor;
+  label.bot(labelpos, (dist, 0));
+  label.bot(labelneg, (-dist, 0));
+  label.lft(labelpos, (0, dist));
+  label.lft(labelneg, (0, -dist));
+enddef;
+
 beginfig(1);
   u := 2.5cm;
-  xmin := -2u;
-  xmax := 2u;
-  ymin := -2u;
-  ymax := 2u;
-  color axiscolor;
-  axiscolor = 0.5 white;
-  drawarrow (xmin, 0)--(xmax, 0) withcolor 0.5 white;
-  drawarrow (0, ymin)--(0, ymax) withcolor 0.5 white;
-  draw (0, u)--(1mm, u) withcolor axiscolor;
-  draw (0, -u)--(1mm, -u) withcolor axiscolor;
-  draw (u, 0)--(u, 1mm) withcolor axiscolor;
-  draw (-u, 0)--(-u, 1mm) withcolor axiscolor;
-  label.top(btex $x$ etex, (xmax, 0));
-  label.rt(btex $y$ etex, (0, ymax));
-  label.bot("1", (u, 0));
-  label.bot("-1", (-u, 0));
-  label.llft("0", (0,0));
-  label.lft("1", (0, u));
-  label.lft("-1", (0, -u));
+  draw_axes_iso(-2u, 2u);
+  draw_ruler_four_dots(u, "1", "-1");
 endfig;
 
-
 beginfig(2);
-  color axiscolor;
-  axiscolor = 0.5 white;
-  drawarrow (xmin, 0)--(xmax, 0) withcolor 0.5 white;
-  drawarrow (0, ymin)--(0, ymax) withcolor 0.5 white;
-  label.top(btex $x$ etex, (xmax, 0));
-  label.rt(btex $y$ etex, (0, ymax));
-  label.llft("0", (0,0));
-
-  def draw_ruler_four_dots(expr dist, labelpos, labelneg) =
-    draw (0, dist)--(1mm, dist) withcolor axiscolor;
-    draw (0, -dist)--(1mm, -dist) withcolor axiscolor;
-    draw (dist, 0)--(dist, 1mm) withcolor axiscolor;
-    draw (-dist, 0)--(-dist, 1mm) withcolor axiscolor;
-    label.bot(labelpos, (dist, 0));
-    label.bot(labelneg, (-dist, 0));
-    label.lft(labelpos, (0, dist));
-    label.lft(labelneg, (0, -dist));
-  enddef;
-
+  u := 2.5cm;
+  _min := -2u;
+  draw_axes_iso(_min, -_min);
   draw_ruler_four_dots(u, "1", "-1");
   draw_ruler_four_dots(0.5u, btex ${1 \over 2}$ etex, btex $ -{1 \over 2}$ etex);
 
@@ -55,8 +48,10 @@ beginfig(2);
   pickup pensquare scaled penwidth;
   draw (-0.5u + 0.5penwidth, 0)--(0.5u - 0.5penwidth, 0) ;
   draw (0, -0.5u + 0.5penwidth)--(0, 0.5u - 0.5penwidth) ;
+  drawdot(-0.5u, 0) withpen pencircle scaled (penwidth * 2);
+  drawdot(0, -0.5u) withpen pencircle scaled (penwidth * 2);
 
-  label.bot(btex $\bar{R} = \{ (x,y) | (x = 0 $ and $ -{1 \over 2} \leq y < {1 \over 2})$ or $ (y = 0 $ and $ -{1 \over 2} \leq x < {1 \over 2})\} $ etex, (0, ymin));
+  label.bot(btex $\bar{R} = \{ (x,y) | (x = 0 $ and $ -{1 \over 2} \leq y < {1 \over 2})$ or $ (y = 0 $ and $ -{1 \over 2} \leq x < {1 \over 2})\} $ etex, (0, _min));
 
 endfig;
 
@@ -82,7 +77,7 @@ beginfig(3);
 
   def draw_ruler_four_dots(expr dist, labelpos, labelneg) =
     draw (0, dist)--(1mm, dist) withcolor axiscolor;
-    draw (0, -dist)--(1mm, -dist) withcolor axiscolor;
+    draw -(0, -dist)--(1mm, -dist) withcolor axiscolor;
     draw (dist, 0)--(dist, 1mm) withcolor axiscolor;
     draw (-dist, 0)--(-dist, 1mm) withcolor axiscolor;
     label.bot(labelpos, (dist, 0));
