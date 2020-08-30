@@ -19,6 +19,10 @@ def draw_axes_iso(expr min, max) =
   draw_axes(min, max, min, max);
 enddef;
 
+def draw_axes_sym(expr max) =
+  draw_axes(-max, max, -max, max);
+enddef;
+
 % markings at dist and -dist on each axis.
 def draw_ruler_four_dots(expr dist, labelpos, labelneg) =
   draw (0, dist)--(markinglength, dist) withcolor axiscolor;
@@ -33,14 +37,14 @@ enddef;
 
 beginfig(1);
   u := 2.5cm;
-  draw_axes_iso(-2u, 2u);
+  draw_axes_sym(2u);
   draw_ruler_four_dots(u, "1", "-1");
 endfig;
 
 beginfig(2);
   u := 2.5cm;
   _min := -2u;
-  draw_axes_iso(_min, -_min);
+  draw_axes_sym(-_min);
   draw_ruler_four_dots(u, "1", "-1");
   draw_ruler_four_dots(0.5u, btex ${1 \over 2}$ etex, btex $ -{1 \over 2}$ etex);
 
@@ -67,24 +71,7 @@ beginfig(3);
   xmax := nxmax * u + ext;
   ymin := nymin * u - ext;
   ymax := nymax * u + ext;
-  color axiscolor;
-  axiscolor := 0.5 white;
-  drawarrow (xmin, 0)--(xmax, 0) withcolor axiscolor;
-  drawarrow (0, ymin)--(0, ymax) withcolor axiscolor;
-  label.top(btex $x$ etex, (xmax, 0));
-  label.rt(btex $y$ etex, (0, ymax));
-  label.llft("0", (0,0));
-
-  def draw_ruler_four_dots(expr dist, labelpos, labelneg) =
-    draw (0, dist)--(1mm, dist) withcolor axiscolor;
-    draw -(0, -dist)--(1mm, -dist) withcolor axiscolor;
-    draw (dist, 0)--(dist, 1mm) withcolor axiscolor;
-    draw (-dist, 0)--(-dist, 1mm) withcolor axiscolor;
-    label.bot(labelpos, (dist, 0));
-    label.bot(labelneg, (-dist, 0));
-    label.lft(labelpos, (0, dist));
-    label.lft(labelneg, (0, -dist));
-  enddef;
+  draw_axes_sym(xmax);
 
   for i = 1 upto nymax:
     draw_ruler_four_dots(i * u, decimal(i), decimal(-i));
@@ -92,14 +79,14 @@ beginfig(3);
   def drawZtwo =
     for iX = nxmin upto nxmax:
       for iY = nymin upto nymax:
-        drawdot(iX * u, iY * u) withpen pencircle scaled 1.75pt withcolor axiscolor;
+        drawdot(iX * u, iY * u) withpen pencircle scaled 1.5pt withcolor axiscolor;
       endfor
     endfor
   enddef;
 
   drawZtwo;
 
-  penwidth := 1.25pt;
+  penwidth := 1pt;
   pickup pensquare scaled penwidth;
   def draw_R_bar_plus(expr n, m) =
     draw ((n - 0.5) * u + 0.5penwidth, m * u)--((n + 0.5) * u - 0.5penwidth, m * u) ;
@@ -127,24 +114,7 @@ beginfig(4);
   xmax := nxmax * u + ext;
   ymin := nymin * u - ext;
   ymax := nymax * u + ext;
-  color axiscolor;
-  axiscolor := 0.5 white;
-  drawarrow (xmin, 0)--(xmax, 0) withcolor axiscolor;
-  drawarrow (0, ymin)--(0, ymax) withcolor axiscolor;
-  label.top(btex $x$ etex, (xmax, 0));
-  label.rt(btex $y$ etex, (0, ymax));
-  label.llft("0", (0,0));
-
-  def draw_ruler_four_dots(expr dist, labelpos, labelneg) =
-    draw (0, dist)--(1mm, dist) withcolor axiscolor;
-    draw (0, -dist)--(1mm, -dist) withcolor axiscolor;
-    draw (dist, 0)--(dist, 1mm) withcolor axiscolor;
-    draw (-dist, 0)--(-dist, 1mm) withcolor axiscolor;
-    label.bot(labelpos, (dist, 0));
-    label.bot(labelneg, (-dist, 0));
-    label.lft(labelpos, (0, dist));
-    label.lft(labelneg, (0, -dist));
-  enddef;
+  draw_axes_sym(xmax);
 
   for i = 1 upto nymax:
     draw_ruler_four_dots(i * u, decimal(i), decimal(-i));
@@ -161,13 +131,6 @@ beginfig(4);
 
   draw (-5.5u,-3u)..(3u,2.55u)..(5.5u,2u);
 
-  penwidth := 1.25pt;
-  pickup pensquare scaled penwidth;
-  def draw_R_bar_plus(expr n, m) =
-    draw ((n - 0.5) * u + 0.5penwidth, m * u)--((n + 0.5) * u - 0.5penwidth, m * u) ;
-    draw (n * u, (m - 0.5) * u + 0.5penwidth)--(n * u, (m + 0.5) * u - 0.5penwidth) ;
-  enddef;
-
   draw_R_bar_plus(-5, -2);
   draw_R_bar_plus(-4,-1);
   draw_R_bar_plus(-4,0);
@@ -181,7 +144,7 @@ beginfig(4);
   draw_R_bar_plus(4,2);
   draw_R_bar_plus(5,2);
 
-  label.bot(btex $\bar{R} + (m,n) = \{ (x+m, y+n) | (x,y) \in \bar{R}\}$ for $(m,n) = (1,2),(1,-4),(-5,2),(-3,-2)$ etex, (0, ymin));
+  label.bot(btex $\bar{R} + (m,n)$ that cross the curve etex, (0, ymin));
 
 endfig;
 
@@ -197,8 +160,6 @@ beginfig(5);
   xmax := nxmax * u + ext;
   ymin := nymin * u - ext;
   ymax := nymax * u + ext;
-  color axiscolor;
-  axiscolor := 0.5 white;
 %  drawarrow (xmin, 0)--(xmax, 0) withcolor axiscolor;
 %  drawarrow (0, ymin)--(0, ymax) withcolor axiscolor;
 %  label.top(btex $x$ etex, (xmax, 0));
@@ -258,7 +219,7 @@ beginfig(5);
   draw p withpen pencircle scaled 2pt withcolor white;
   draw p withpen pencircle scaled 1pt withcolor black;
 
-  label.bot(btex $\bar{R} + (m,n) = \{ (x+m, y+n) | (x,y) \in \bar{R}\}$ for $(m,n) = (1,2),(1,-4),(-5,2),(-3,-2)$ etex, (0, ymin));
+  label.bot(btex Freeman's rendering of the curve etex, (0, ymin));
 
 endfig;
 
