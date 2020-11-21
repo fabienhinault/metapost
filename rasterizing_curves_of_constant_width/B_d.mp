@@ -1,3 +1,6 @@
+% https://tex.stackexchange.com/questions/255250/fonts-in-math-expressions-in-metapost
+input latexmp;
+setupLaTeXMP(packages="amssymb");
 outputformat := "png";
 outputformatoptions := "format=rgb antialias=best";
 hppp := 0.1;
@@ -6,6 +9,7 @@ vppp := 0.1;
 markinglength := 1mm;
 color axiscolor;
 axiscolor := 0.5 white;
+
 
 def draw_axes(expr xmin, xmax, ymin, ymax) =
   drawarrow (xmin, 0)--(xmax, 0) withcolor axiscolor;
@@ -35,6 +39,14 @@ def draw_ruler_four_dots(expr dist, labelpos, labelneg) =
   label.lft(labelneg, (0, -dist));
 enddef;
 
+def drawBd(expr nxmin, nxmax, nymin, nymax, u, d) =
+  for iX = nxmin upto nxmax:
+    for iY = nymin upto nymax:
+      if 
+      drawdot(iX * u, iY * u) withpen pencircle scaled 1.75pt withcolor axiscolor;
+    endfor
+  endfor
+enddef;
 
 def drawZtwo(expr nxmin, nxmax, nymin, nymax, u) =
   for iX = nxmin upto nxmax:
@@ -49,48 +61,53 @@ def drawZtwo_sym(expr max, u) =
 enddef;
 
 def draw_pixel(expr n, m, u) =
-  drawdot (n * u , m * u) withpen pensquare scaled u withcolor axiscolor;
+  drawdot (n * u , m * u) withpen pensquare scaled u withcolor 0.75 white;
 enddef;
+
 
 beginfig(1);
   u := 1cm;
   ext := 0.5 u;
   nmax := 5;
   _max := nmax * u + ext;
+  draw_pixel(-1, 0, u);
+  draw_pixel(0, -1, u);
+  draw_pixel(0, 0, u);
+  draw_pixel(0, 1, u);
+  draw_pixel(1, 0, u);
   draw_axes_sym(_max);
   for i = 1 upto nmax:
     draw_ruler_four_dots(i * u, decimal(i), decimal(-i));
   endfor;
-  draw_pixel(3, 2, u);
-  draw_pixel(3, 3, u);
   drawZtwo_sym(nmax, u);
-  path p;
-  p := (-5.5u,-3u)..(3u,2.55u)..(5.5u,2u);
-  draw p;
   draw fullcircle scaled 2u;
-  label.lrt(btex $R_2$ etex, 0.5 * sqrt 2 *(1, -1) * u );
-  drawdot(3u,2.55u) withpen pencircle scaled 1.75pt;
-  label.urt(btex $P$ etex, (3u, 2.55u) );
-  draw fullcircle scaled 2u shifted (3u, 2.55u);
-  label.lrt(btex $P + R_2$ etex, (3u, 2.55u) + 0.5 * sqrt 2 *(1, -1) * u );
-  drawdot(3 * u, 3 * u) withpen pencircle scaled 1.75pt;
-  drawdot(3 * u, 2 * u) withpen pencircle scaled 1.75pt;
-
-  label.bot(btex Take all pixels whose centers lie in $ C + R_d $ etex, (0, -_max));
+  label.bot(textext("$B_2 = R_2 \cap \mathbb{Z}^2 $"), (0, -_max));
 endfig;
+
 
 beginfig(2);
   u := 1cm;
   ext := 0.5 u;
   nmax := 5;
   _max := nmax * u + ext;
-  draw_pixel(3, 2, u);
-  draw_pixel(3, 3, u);
+  draw_pixel(-1, -1, u);
+  draw_pixel(-1, 0, u);
+  draw_pixel(-1, 1, u);
+  draw_pixel(0, -1, u);
+  draw_pixel(0, 0, u);
+  draw_pixel(0, 1, u);
+  draw_pixel(1, -1, u);
+  draw_pixel(1, 0, u);
+  draw_pixel(1, 1, u);
+  draw_axes_sym(_max);
+  for i = 1 upto nmax:
+    draw_ruler_four_dots(i * u, decimal(i), decimal(-i));
+  endfor;
   drawZtwo_sym(nmax, u);
-  path p;
-  p := (-5.5u,-3u)..(3u,2.55u)..(5.5u,2u); 
-  draw p withpen pencircle scaled 2pt withcolor white;
-  draw p withpen pencircle scaled 1pt withcolor black;
+  draw fullcircle scaled 3u;
+  label.bot(textext("$B_3 = R_3 \cap \mathbb{Z}^2 $"), (0, -_max));
 endfig;
 
-end
+
+end;
+

@@ -20,6 +20,7 @@ beginfig(1);
   axiscolor := 0.5 white;
   drawarrow (xmin, 0)--(xmax, 0) withcolor 0.5 white;
   drawarrow (0, ymin)--(0, ymax) withcolor 0.5 white;
+  label.llft("0", (0,0));
 
   def drawruler_x =
     for iY = nymin upto nymax:

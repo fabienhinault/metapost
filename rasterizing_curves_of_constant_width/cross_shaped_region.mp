@@ -13,6 +13,7 @@ def draw_axes(expr xmin, xmax, ymin, ymax) =
   drawarrow (0, ymin)--(0, ymax) withcolor axiscolor;
   label.top(btex $x$ etex, (xmax, 0));
   label.rt(btex $y$ etex, (0, ymax));
+  label.llft("0", (0,0));
 enddef;
 
 def draw_axes_iso(expr min, max) =
