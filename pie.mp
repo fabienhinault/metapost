@@ -1,0 +1,21 @@
+prologues := 3;
+outputformat := "svg";
+beginfig(1);
+u = 1cm;
+numeric start_angle;
+start_angle = 90;
+numeric angle;
+angle = 90;
+path x;
+x := (0,0)--(u,0) rotated start_angle;
+path y;
+y := x rotated angle;
+path a;
+a := fullcircle scaled u rotated start_angle cutafter y;
+path b;
+b := fullcircle scaled u rotated (start_angle + angle) cutafter x;
+fill buildcycle(x, a, y) withcolor green;
+fill buildcycle(y, b, x) withcolor 0.5white;
+
+endfig;
+end;
