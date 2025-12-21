@@ -1,0 +1,91 @@
+outputformat := "svg";
+outputformatoptions := "format=rgb antialias=best";
+hppp := 0.1;
+vppp := 0.1;
+tracingonline:=1;
+outputtemplate := "%j-%c.svg";
+
+u := 1cm;
+h := u;
+w := u;
+space := .2h;
+rounding := space;
+color golden; golden := 210/256*red + 182/256*green + 120/256*blue;
+color navy; navy := 1/256*red + 14/256*green + 102/256*blue;
+color dark_navy; dark_navy := 16/256*red + 43/256*blue;
+path square; square := ((rounding, 0)--(w - rounding, 0){right}..(w, rounding){up}--(w, h - rounding){up}..(w - rounding, h){left}--(rounding, h){left}..(0, h - rounding){down}--(0, rounding)..cycle);
+pen square_pen; square_pen := makepen square;
+% path bout; bout := ((w - rounding, h){left}--(rounding, h){left}..(0, h - rounding){down}--(0, rounding){down}..(rounding, 0){right}--(w - rounding, 0){right});
+path bout; bout := ((0, h - rounding){down}--(0, rounding){down});
+path basic_forward; basic_forward := ((rounding, 0){right}--(w - rounding, 0){right});
+path basic_backward; basic_backward := ((w - rounding, h){left}--(rounding, h){left});
+
+def point_dir(expr path_point, path_dir, square, dir_angle) =
+    path_point rotatedaround (h/2, w/2) dir_angle shifted (square xscaled (w + space) yscaled (h + space)){path_dir rotated dir_angle}
+enddef;
+
+def extremity(expr point, dir_angle) =
+    (0, h - rounding) rotatedaround (h/2, w/2) dir_angle shifted (point xscaled (w + space) yscaled (h + space)){down rotated dir_angle}
+    --(0, rounding) rotatedaround (h/2, w/2) dir_angle shifted (point xscaled (w + space) yscaled (h + space)){down rotated dir_angle}
+enddef;
+
+def elt_forward(expr point, dir_angle) = 
+    (rounding, 0)rotatedaround (h/2, w/2) dir_angle shifted (point xscaled (w + space) yscaled (h + space)){right rotated dir_angle}
+    --(w - rounding, 0){right}
+enddef;
+
+def whole_path(expr len, coords) =
+    pair dirs[];
+    for i = 0 upto len - 2:
+        dirs[i] := coords[i + 1] - coords[i];
+    endfor
+    path the_path;
+    the_path := bout rotatedaround (h/2, w/2) angle(dir[0]) shifted (coords[0] xscaled (w + space) yscaled (h + space))
+        --(basic_forward rotatedaround (h/2, w/2) angle(dir[0]) shifted (coords[0] xscaled (w + space) yscaled (h + space)))
+        for i = 1 upto len - 1:
+            pair ddir; ddir := dirs[i]-dirs[i-1];
+            angle_ddir := angle(ddir[i]);
+            if ddir = (0, 0):
+                ..(basic_forward rotatedaround (h/2, w/2) angle(dir[i]) shifted (coords[i] xscaled (w + space) yscaled (h + space)))
+            elseif angle_ddir = -90:
+                ..(basic_forward rotatedaround (h/2, w/2) angle(dir[i-1]) shifted (coords[i] xscaled (w + space) yscaled (h + space)))
+                ..(basic_forward rotatedaround (h/2, w/2) angle(dir[i]) shifted (coords[i] xscaled (w + space) yscaled (h + space)))
+            fi
+        endfor
+        ..bout rotatedaround (h/2, w/2) angle(dir[len - 2]) shifted (coords[len - 1] xscaled (w + space) yscaled (h + space))
+        --(basic_backward rotatedaround (h/2, w/2) angle(dir[len - 2]) shifted (coords[len - 1] xscaled (w + space) yscaled (h + space)))
+        for i = len - 1 downto 1:
+            pair ddir; ddir := dirs[i]-dirs[i-1];
+            angle_ddir := angle(ddir[i]);
+            if ddir = (0, 0):
+                ..(basic_backward rotatedaround (h/2, w/2) angle(dir[i]) shifted (coords[i] xscaled (w + space) yscaled (h + space)))
+            elseif angle_ddir = 90:
+                ..(basic_backward rotatedaround (h/2, w/2) angle(dir[i]) shifted (coords[i] xscaled (w + space) yscaled (h + space)))
+                ..(basic_backward rotatedaround (h/2, w/2) angle(dir[i-1]) shifted (coords[i] xscaled (w + space) yscaled (h + space)))
+            fi
+        endfor
+        ..cycle
+
+enddef;
+
+
+beginfig(1);
+fill unitsquare xscaled 10w yscaled 5h shifted (-space, -space) withcolor dark_navy;
+for i_row = 0 upto 3:
+    for j_col = 0 upto 3:
+        fill square shifted (i_row*w + (i_row)*space, j_col*h + j_col*space) withcolor golden;
+    endfor
+endfor
+endfig;
+
+beginfig(2);
+fill unitsquare xscaled 10w yscaled 5h shifted (-space, -space) withcolor dark_navy;
+pair A; A := (0, 3(h + space));
+pair B; B := (0, 2(h + space));
+fill ((A + (0, h - rounding)){down}--(B + (0, rounding)){down}..(B + (rounding, 0){right})--(B + (w -rounding, 0){right})..(B + (w, rounding)){up}--(A + (w, h - rounding)){up}..(A + (w - rounding, h)){left}--(A + (rounding, h)){left}..cycle) withcolor golden;
+endfig;
+
+beginfig(3);
+fill unitsquare xscaled 10w yscaled 5h shifted (-space, -space) withcolor dark_navy;
+endfig;
+end;
