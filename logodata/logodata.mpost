@@ -63,8 +63,8 @@ def whole_path(expr len)(text coords) =
                 elseif angle_ddirs[i] = 90:
                     ..elt_forward(coords[i], angle_dirs[i-1])
                     ..elt_forward(coords[i], angle_dirs[i])
-%                else:
-%                    ..elt_forward_concave(coords[i], angle_dirs[i-1])
+                else:
+                    ..point_dir((w, 0), right, coords[i-1], angle_dirs[i-1])..point_dir((0, 0), right, coords[i+1], angle_dirs[i])
                 fi
             endfor
             ..elt_forward(coords[len - 1], angle_dirs[len - 2])
@@ -76,8 +76,8 @@ def whole_path(expr len)(text coords) =
                 elseif angle_ddirs[i] = -90:
                     ..elt_backward(coords[i], angle_dirs[i])
                     ..elt_backward(coords[i], angle_dirs[i-1])
-%                else:
-%                    ..elt_backward_concave(coords[i], angle_dirs[i])
+                else:
+                    ..point_dir((0, h), left, coords[i+1], angle_dirs[i])..point_dir((w, h), left, coords[i-1], angle_dirs[i-1])
                 fi
             endfor
             ..elt_backward(coords[0], angle_dirs[0])
@@ -103,7 +103,22 @@ fill ((A + (0, h - rounding)){down}--(B + (0, rounding)){down}..(B + (rounding, 
 endfig;
 
 beginfig(3);
-fill unitsquare xscaled 10w yscaled 5h shifted (-space, -space) withcolor dark_navy;
+    pair coords[];
+    coords[0] := (0,0);
+    coords[1] := (0,1);
+    coords[2] := (1,1);
+    draw whole_path(3)(coords) withcolor (.5 white);
+    len := 3;
+    for i = 0 upto len - 2:
+        angle_dirs[i] := angle (coords[i + 1] - coords[i]);
+        show angle_dirs[i];
+    endfor
+    % pickup pencircle scaled 4pt;
+    %..point_dir((0, h), left, coords[i+1], angle_dirs[i])..point_dir((w, h), left, coords[i-1], angle_dirs[i-1])
+    i:=1;
+    draw origin{up}..point_dir((0, h), left, coords[i+1], angle_dirs[i]);
+    %draw origin{up}..point_dir((0, 0), right, coords[i-1], angle_dirs[i-1] + 180);
+
 endfig;
 
 beginfig(4);
