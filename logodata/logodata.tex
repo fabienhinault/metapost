@@ -1,0 +1,134 @@
+% docker run -ti --name texlive --rm -v $(pwd):/usr/src/app -w /usr/src/app texlive/texlive lualatex logodata.tex
+
+\documentclass[border=5mm]{standalone}
+\usepackage{luamplib}
+\usepackage{fontspec}
+\setmainfont{OpenSans-ExtraBold}
+\begin{document}
+\mplibtextextlabel{enable}
+\begin{mplibcode}
+% outputformat := "png";
+% outputformatoptions := "format=rgb antialias=best";
+% hppp := 0.1;
+% vppp := 0.1;
+% tracingonline:=1;
+% %tracingmacros:=1;
+% outputtemplate := "%j-%c.png";
+
+u := 1cm;
+h := u;
+w := u;
+space := .2h;
+rounding := space;
+color golden; golden := 210/256*red + 182/256*green + 120/256*blue;
+color navy; navy := 1/256*red + 14/256*green + 102/256*blue;
+color dark_navy; dark_navy := 16/256*red + 43/256*blue;
+path square; square := ((rounding, 0)--(w - rounding, 0){right}..(w, rounding){up}--(w, h - rounding){up}..(w - rounding, h){left}--(rounding, h){left}..(0, h - rounding){down}--(0, rounding)..cycle);
+pen square_pen; square_pen := makepen square;
+% path bout; bout := ((w - rounding, h){left}--(rounding, h){left}..(0, h - rounding){down}--(0, rounding){down}..(rounding, 0){right}--(w - rounding, 0){right});
+path bout; bout := ((0, h - rounding){down}--(0, rounding){down});
+path basic_forward; basic_forward := ((rounding, 0){right}--(w - rounding, 0){right});
+path basic_backward; basic_backward := ((w - rounding, h){left}--(rounding, h){left});
+pair dirs[];
+path the_path;
+
+def point_dir(expr path_point, path_dir, square_coords, dir_angle) =
+    path_point rotatedaround((h/2, w/2), dir_angle) shifted (square_coords xscaled (w + space) yscaled (h + space)){path_dir rotated dir_angle}
+enddef;
+
+def extremity(expr square_coords, dir_angle) =
+    point_dir((0, h - rounding), down, square_coords, dir_angle)--point_dir((0, rounding), down, square_coords, dir_angle)
+enddef;
+
+def elt_forward(expr square_coords, dir_angle) =
+    point_dir((rounding, 0), right, square_coords, dir_angle)--point_dir((w - rounding, 0), right, square_coords, dir_angle)
+enddef;
+
+def elt_backward(expr square_coords, dir_angle) =
+    point_dir((w - rounding, h), left, square_coords, dir_angle)--point_dir((rounding, h), left, square_coords, dir_angle)
+enddef;
+
+def elt_forward_concave(expr square_coords, dir_angle) = 
+    point_dir((-space, 0), right, square_coords, dir_angle)..point_dir((0, -space), right, square_coords, dir_angle)
+enddef;
+
+def elt_backward_concave(expr square_coords, dir_angle) = 
+    point_dir((w + space, h), right, square_coords, dir_angle)..point_dir((w, h + space), right, square_coords, dir_angle)
+enddef;
+
+def whole_path(text coords_text) =
+    begingroup
+        pair coords[];
+        len := 0;
+        for coord = coords_text:
+            coords[len] = coord;
+            len := len + 1;
+        endfor
+        for i = 0 upto len - 2:
+            angle_dirs[i] := angle (coords[i + 1] - coords[i]);
+        endfor
+        for i = 1 upto len - 2:
+            angle_ddirs[i] := angle_dirs[i]-angle_dirs[i-1];
+        endfor
+        extremity(coords[0], angle_dirs[0])
+            ..elt_forward(coords[0], angle_dirs[0])
+            for i = 1 upto len - 2:
+                if angle_ddirs[i] = 0:
+                    ..elt_forward(coords[i], angle_dirs[i])
+                elseif angle_ddirs[i] = 90:
+                    ..elt_forward(coords[i], angle_dirs[i-1])
+                    ..elt_forward(coords[i], angle_dirs[i])
+                else:
+                    ..point_dir((w, 0), right, coords[i-1], angle_dirs[i-1])..point_dir((0, 0), right, coords[i+1], angle_dirs[i])
+                fi
+            endfor
+            ..elt_forward(coords[len - 1], angle_dirs[len - 2])
+            ..extremity(coords[len - 1], (angle_dirs[len - 2] + 180))
+            ..elt_backward(coords[len - 1], angle_dirs[len - 2])
+            for i = len - 2 downto 1:
+                if angle_ddirs[i] = 0:
+                    ..elt_backward(coords[i], angle_dirs[i])
+                elseif angle_ddirs[i] = -90:
+                    ..elt_backward(coords[i], angle_dirs[i])
+                    ..elt_backward(coords[i], angle_dirs[i-1])
+                else:
+                    ..point_dir((0, h), left, coords[i+1], angle_dirs[i])..point_dir((w, h), left, coords[i-1], angle_dirs[i-1])
+                fi
+            endfor
+            ..elt_backward(coords[0], angle_dirs[0])
+            ..cycle
+    endgroup
+enddef;
+
+
+beginfig(1);
+    fill unitsquare xscaled 10w yscaled 5h shifted (-space, -space) withcolor dark_navy;
+    fill whole_path((0,3), (0,2)) withcolor golden;
+    fill whole_path((1,3), (1,2)) withcolor golden;
+    fill whole_path((0,1), (0,0), (1,0), (2,0)) withcolor golden;
+    fill whole_path((2,3), (3,3)) withcolor golden;
+    fill whole_path((1,1), (2,1), (2,2)) withcolor golden;
+    fill whole_path((3,0), (3,1), (3,2)) withcolor golden;
+
+    defaultscale := 8;
+    %label.lrt("NUMO", (4(w + space),4h + 3space)) withcolor golden;
+    label.lrt(btex \vbox{\hbox{NUMO}\hbox{DATA}} etex scaled 8 , (4(w + space),4h + 3space)) withcolor golden;
+    % label.lrt("NUMO" infont "cmssbx10" scaled 5, (4(w + space),4h + 3space)) withcolor golden;
+    % label.lrt("NUMO" infont "ugq" scaled 5, (4(w + space),4h + 3space)) withcolor golden;
+    defaultfont:="cmss10";
+    %label.lrt(btex \font\foo=cmssbx10 \foo NUMO etex  scaled 5, (4(w + space),4h + 3space)) withcolor golden;
+    % label.lrt(btex \font\foo=cmss10 \foo NUMO etex  scaled 5, (4(w + space),2h + space)) withcolor golden;
+endfig;
+
+beginfig(2);
+    fill unitsquare xscaled 10w yscaled 5h shifted (-space, -space) withcolor dark_navy;
+    fill whole_path((0,0), (1,0)) withcolor golden;
+    fill whole_path((0, 1), (0, 2)) withcolor golden;
+    fill whole_path((0, 3), (1, 3), (2, 3), (3, 3), (3, 2)) withcolor golden;
+    fill whole_path((1 ,1), (2 ,1)) withcolor golden;
+    fill whole_path((1, 2), (2, 2)) withcolor golden;
+    fill whole_path((2, 0), (3, 0), (3, 1)) withcolor golden;
+endfig;
+end;
+\end{mplibcode}
+\end{document}
