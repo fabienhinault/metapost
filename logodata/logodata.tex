@@ -1,20 +1,16 @@
 % docker run -ti --name texlive --rm -v $(pwd):/usr/src/app -w /usr/src/app texlive/texlive lualatex logodata.tex
 
-\documentclass[border=5mm]{standalone}
+\documentclass[border=0mm]{standalone}
 \usepackage{luamplib}
 \usepackage{fontspec}
+\usepackage[dvipsnames]{xcolor}
+\definecolor{golden}{RGB}{210, 182, 120}
+\definecolor{dark_purple}{RGB}{16, 0, 43}
+\pagecolor{dark_purple}
 \setmainfont{OpenSans-ExtraBold}
 \begin{document}
 \mplibtextextlabel{enable}
-\begin{mplibcode}
-% outputformat := "png";
-% outputformatoptions := "format=rgb antialias=best";
-% hppp := 0.1;
-% vppp := 0.1;
-% tracingonline:=1;
-% %tracingmacros:=1;
-% outputtemplate := "%j-%c.png";
-
+\setbox0=\hbox{\begin{mplibcode}
 u := 1cm;
 h := u;
 w := u;
@@ -102,33 +98,19 @@ enddef;
 
 
 beginfig(1);
-    fill unitsquare xscaled 10w yscaled 5h shifted (-space, -space) withcolor dark_navy;
+    fill unitsquare xscaled (4w + 3 space) yscaled (4h + 3 space) withcolor dark_navy;
     fill whole_path((0,3), (0,2)) withcolor golden;
     fill whole_path((1,3), (1,2)) withcolor golden;
     fill whole_path((0,1), (0,0), (1,0), (2,0)) withcolor golden;
     fill whole_path((2,3), (3,3)) withcolor golden;
     fill whole_path((1,1), (2,1), (2,2)) withcolor golden;
     fill whole_path((3,0), (3,1), (3,2)) withcolor golden;
-
-    defaultscale := 8;
-    %label.lrt("NUMO", (4(w + space),4h + 3space)) withcolor golden;
-    label.lrt(btex \vbox{\hbox{NUMO}\hbox{DATA}} etex scaled 8 , (4(w + space),4h + 3space)) withcolor golden;
-    % label.lrt("NUMO" infont "cmssbx10" scaled 5, (4(w + space),4h + 3space)) withcolor golden;
-    % label.lrt("NUMO" infont "ugq" scaled 5, (4(w + space),4h + 3space)) withcolor golden;
-    defaultfont:="cmss10";
-    %label.lrt(btex \font\foo=cmssbx10 \foo NUMO etex  scaled 5, (4(w + space),4h + 3space)) withcolor golden;
-    % label.lrt(btex \font\foo=cmss10 \foo NUMO etex  scaled 5, (4(w + space),2h + space)) withcolor golden;
 endfig;
 
-beginfig(2);
-    fill unitsquare xscaled 10w yscaled 5h shifted (-space, -space) withcolor dark_navy;
-    fill whole_path((0,0), (1,0)) withcolor golden;
-    fill whole_path((0, 1), (0, 2)) withcolor golden;
-    fill whole_path((0, 3), (1, 3), (2, 3), (3, 3), (3, 2)) withcolor golden;
-    fill whole_path((1 ,1), (2 ,1)) withcolor golden;
-    fill whole_path((1, 2), (2, 2)) withcolor golden;
-    fill whole_path((2, 0), (3, 0), (3, 1)) withcolor golden;
-endfig;
 end;
-\end{mplibcode}
+\end{mplibcode}}
+\lower\ht0\copy0
+\setbox1=\hbox{\fontspec[Scale=12]{OpenSans-ExtraBold}\textcolor{golden}{\kern-.0667em N\kern-.1167em U\kern-.1167em M\kern-.1167em O\kern-.0367em }}
+\setbox2=\hbox{\vbox{\copy1\vskip1mm\hbox to \wd1{\fontspec[Scale=5]{OpenSans} \textcolor{golden}{\kern-.0667em D\hfil A\hfil T\hfil A}}}}
+\hskip1mm \lower\ht2\copy2
 \end{document}
