@@ -38,5 +38,11 @@
       (match-let (((list path remainings) (list-next (car availables) availables 1) ))
         (cons path (create-paths remainings)))))
           
-
-(create-paths (cartesian-product (range 4) (range 4)) )
+(define (new-logo)
+  (for-each
+   (λ(l) (displayln (~a "    fill whole_path("
+                        (string-join (map
+                                      (λ(ll) (~a "(" (string-join (map ~a ll) ", ") ")"))
+                                      l)
+                                     ", ") ") withcolor golden;")))
+   (create-paths (cartesian-product (range 4) (range 4)) )))
