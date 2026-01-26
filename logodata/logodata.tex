@@ -1,6 +1,6 @@
 % docker run -ti --name texlive --rm -v $(pwd):/usr/src/app -w /usr/src/app texlive/texlive lualatex logodata.tex
 
-\documentclass[border=0mm]{standalone}
+\documentclass[border=5mm]{standalone}
 \usepackage{luamplib}
 \usepackage{fontspec}
 \usepackage[dvipsnames]{xcolor}
@@ -52,6 +52,46 @@ def elt_backward_concave(expr square_coords, dir_angle) =
     point_dir((w + space, h), right, square_coords, dir_angle)..point_dir((w, h + space), right, square_coords, dir_angle)
 enddef;
 
+def path_forward(expr len, coords, angle_dirs, angle_ddirs) = 
+    elt_forward(coords[0], angle_dirs[0])
+    for i = 1 upto len - 2:
+        if angle_ddirs[i] = 0:
+            % 1 side when no turn
+            ..elt_forward(coords[i], angle_dirs[i])
+        elseif angle_ddirs[i] = 90:
+            % 2 sides for convex turn
+            ..elt_forward(coords[i], angle_dirs[i-1])
+            ..elt_forward(coords[i], angle_dirs[i])
+%        elseif not (((i < len - 2) and (angle_ddirs[i+1] = 270)) or ((i > 1) and (angle_ddirs[i-1] = 270))):
+%            % add no square side, but unthicken corner for concave turn, except U turn
+%            ..point_dir((w, 0), right, coords[i-1], angle_dirs[i-1])..point_dir((0, 0), right, coords[i+1], angle_dirs[i])
+%            % add no path element at all for U turn
+        fi
+    endfor
+    % last square
+    ..elt_forward(coords[len - 1], angle_dirs[len - 2])
+enddef;
+
+def path_backward(expr len, coords, angle_dirs, angle_ddirs) = 
+    elt_backward(coords[len - 1], angle_dirs[len - 2])
+    % back
+    for i = len - 2 downto 1:
+        if angle_ddirs[i] = 0:
+            % 1 side when no turn
+            ..elt_backward(coords[i], angle_dirs[i])
+        elseif angle_ddirs[i] = 270:
+            % 2 sides for convex turn
+            ..elt_backward(coords[i], angle_dirs[i])
+            ..elt_backward(coords[i], angle_dirs[i-1])
+%        elseif not (((i < len - 2) and (angle_ddirs[i+1] = 90)) or ((i > 1) and (angle_ddirs[i-1] = 90))):
+%            % add no square side, but unthicken corner for concave turn
+%            ..point_dir((0, h), left, coords[i+1], angle_dirs[i])..point_dir((w, h), left, coords[i-1], angle_dirs[i-1])
+%            % add no path element at all for U turn
+        fi
+    endfor
+    ..elt_backward(coords[0], angle_dirs[0])
+enddef;
+
 def whole_path(text coords_text) =
     begingroup
         pair coords[];
@@ -64,53 +104,137 @@ def whole_path(text coords_text) =
             angle_dirs[i] := angle (coords[i + 1] - coords[i]);
         endfor
         for i = 1 upto len - 2:
-            angle_ddirs[i] := angle_dirs[i]-angle_dirs[i-1];
+            angle_ddirs[i] := (angle_dirs[i]-angle_dirs[i-1]) mod 360;
         endfor
         extremity(coords[0], angle_dirs[0])
-            ..elt_forward(coords[0], angle_dirs[0])
-            for i = 1 upto len - 2:
-                if angle_ddirs[i] = 0:
-                    ..elt_forward(coords[i], angle_dirs[i])
-                elseif angle_ddirs[i] = 90:
-                    ..elt_forward(coords[i], angle_dirs[i-1])
-                    ..elt_forward(coords[i], angle_dirs[i])
-                else:
-                    ..point_dir((w, 0), right, coords[i-1], angle_dirs[i-1])..point_dir((0, 0), right, coords[i+1], angle_dirs[i])
+        ..elt_forward(coords[0], angle_dirs[0])
+        if len > 2:
+            if angle_ddirs[1] = 270:
+                ..point_dir((w, 0), right, coords[0], angle_dirs[0])
+            fi
+        fi
+        for i = 1 upto len - 2:
+            if i > 1:
+                if (angle_ddirs[i-1] = 270) and (angle_ddirs[i] <> 270) :
+                    ..point_dir((0, 0), right, coords[i], angle_dirs[i-1])
                 fi
-            endfor
-            ..elt_forward(coords[len - 1], angle_dirs[len - 2])
-            ..extremity(coords[len - 1], (angle_dirs[len - 2] + 180))
-            ..elt_backward(coords[len - 1], angle_dirs[len - 2])
-            for i = len - 2 downto 1:
-                if angle_ddirs[i] = 0:
-                    ..elt_backward(coords[i], angle_dirs[i])
-                elseif angle_ddirs[i] = -90:
-                    ..elt_backward(coords[i], angle_dirs[i])
-                    ..elt_backward(coords[i], angle_dirs[i-1])
-                else:
-                    ..point_dir((0, h), left, coords[i+1], angle_dirs[i])..point_dir((w, h), left, coords[i-1], angle_dirs[i-1])
+            fi
+            if angle_ddirs[i] = 0:
+                % 1 side when no turn
+                ..elt_forward(coords[i], angle_dirs[i])
+            elseif angle_ddirs[i] = 90:
+                % 2 sides for convex turn
+                ..elt_forward(coords[i], angle_dirs[i-1])
+                ..elt_forward(coords[i], angle_dirs[i])
+            fi
+            if i < len - 2:
+                if (angle_ddirs[i+1] = 270) and (angle_ddirs[i] <> 270) :
+                    ..point_dir((w, 0), right, coords[i], angle_dirs[i])
                 fi
-            endfor
-            ..elt_backward(coords[0], angle_dirs[0])
-            ..cycle
+            fi
+        endfor
+        if len > 2:
+            if angle_ddirs[len - 2] = 270:
+                ..point_dir((0, 0), right, coords[len - 1], angle_dirs[len - 2])
+            fi
+        fi
+        % last square
+        ..elt_forward(coords[len - 1], angle_dirs[len - 2])
+        ..extremity(coords[len - 1], (angle_dirs[len - 2] + 180))
+        ..elt_backward(coords[len - 1], angle_dirs[len - 2])
+        % back
+        if len > 2:
+            if angle_ddirs[len - 2] = 90:
+                ..point_dir((0, h), left, coords[len - 1], angle_dirs[len - 2])
+            fi
+        fi
+        for i = len - 2 downto 1:
+            if i < len - 2:
+                if (angle_ddirs[i+1] = 90) and (angle_ddirs[i] <> 90) :
+                    ..point_dir((w, h), left, coords[i], angle_dirs[i])
+                fi
+            fi
+            if angle_ddirs[i] = 0:
+                % 1 side when no turn
+                ..elt_backward(coords[i], angle_dirs[i])
+            elseif angle_ddirs[i] = 270:
+                % 2 sides for convex turn
+                ..elt_backward(coords[i], angle_dirs[i])
+                ..elt_backward(coords[i], angle_dirs[i-1])
+            fi
+            if i > 1:
+                if (angle_ddirs[i-1] = 90) and (angle_ddirs[i] <> 90) :
+                    ..point_dir((0, h), left, coords[i], angle_dirs[i-1])
+                fi
+            fi
+        endfor
+        if len > 2:
+            if angle_ddirs[1] = 90:
+                ..point_dir((w, h), left, coords[0], angle_dirs[0])
+            fi
+        fi
+        ..elt_backward(coords[0], angle_dirs[0])
+        ..cycle
     endgroup
 enddef;
 
 
 beginfig(1);
     fill unitsquare xscaled (4w + 3 space) yscaled (4h + 3 space) withcolor dark_navy;
-    fill whole_path((0,3), (0,2)) withcolor golden;
-    fill whole_path((1,3), (1,2)) withcolor golden;
-    fill whole_path((0,1), (0,0), (1,0), (2,0)) withcolor golden;
-    fill whole_path((2,3), (3,3)) withcolor golden;
-    fill whole_path((1,1), (2,1), (2,2)) withcolor golden;
-    fill whole_path((3,0), (3,1), (3,2)) withcolor golden;
+    % >>>>>>
+    fill whole_path((0, 0), (0, 1), (1, 1), (1, 2), (0, 2)) withcolor golden;
+    fill whole_path((2, 3), (2, 2), (3, 2), (3, 1), (2, 1)) withcolor golden;
+    fill whole_path((0, 3), (1, 3)) withcolor golden;
+    fill whole_path((1,0), (2,0), (3,0)) withcolor golden;
+    %fill whole_path((2, 0), (3, 0), (3, 1), (2, 1)) withcolor golden;
+    %fill whole_path((2, 3), (3, 3), (3, 2)) withcolor golden;
+    % <<<<<<
 endfig;
 
+%%% tests
+%beginfig(2);
+%    draw whole_path((0, 0), (1, 0), (1, 1), (0, 1), (0, 2)) withcolor golden;
+%endfig;
+%beginfig(3);
+%    draw whole_path((0, 0), (1, 0), (1, 1)) withcolor golden;
+%endfig;
+%beginfig(4);
+%    draw whole_path((0, 0), (1, 0), (1, -1)) withcolor golden;
+%endfig;
+%beginfig(5);
+%    draw whole_path((0, 0), (1, 0), (2, 0), (2,1), (2,2)) withcolor golden;
+%endfig;
+%beginfig(6);
+%    draw whole_path((0, 0), (1, 0), (2, 0), (2,-1), (2,-2)) withcolor golden;
+%endfig;
+%beginfig(3);
+%    draw whole_path((0, 0), (1, 0), (1, 1), (0, 1)) withcolor golden;
+%endfig;
+%beginfig(4);
+%    draw whole_path((0, 1), (1, 1), (1, 0), (0, 0)) withcolor golden;
+%endfig;
+%beginfig(5);
+%    draw whole_path((0, 0), (1, 0), (2, 0), (2,1), (1, 1), (0, 1)) withcolor golden;
+%endfig;
+%beginfig(6);
+%    draw whole_path((0, 0), (1, 0), (2, 0), (2,-1), (1, -1), (0, -1)) withcolor golden;
+%endfig;
+%beginfig(7);
+%    draw whole_path((0, 0), (0, 1), (1, 1), (1, 2), (0, 2)) withcolor golden;
+%endfig;
+%beginfig(8);
+%    draw whole_path((0, 0), (0, 1), (1, 1), (1, 2)) withcolor golden;
+%endfig;
+%beginfig(9);
+%    draw whole_path((0, 0), (0, 1), (1, 1)) withcolor golden;
+%endfig;
+%beginfig(10);
+%    draw whole_path((0, 0), (0, 1), (1, 1), (2, 1)) withcolor golden;
+%endfig;
 end;
 \end{mplibcode}}
 \lower\ht0\copy0
-\setbox1=\hbox{\fontspec[Scale=12]{OpenSans-ExtraBold}\textcolor{golden}{\kern-.0667em N\kern-.1167em U\kern-.1167em M\kern-.1167em O\kern-.0367em }}
-\setbox2=\hbox{\vbox{\copy1\vskip1mm\hbox to \wd1{\fontspec[Scale=5]{OpenSans} \textcolor{golden}{\kern-.0667em D\hfil A\hfil T\hfil A}}}}
+\setbox1=\hbox{\fontspec[Scale=12]{OpenSans-ExtraBold}\textcolor{golden}{\kern-.0667em PIPO\kern-.0367em}}
+\setbox2=\hbox{\vbox{\copy1\vskip1mm\hbox to \wd1{\fontspec[Scale=5]{OpenSans} \textcolor{golden}{\kern-.0667em B\hfil I\hfil M\hfil B\hfil O}}}}
 \hskip1mm \lower\ht2\copy2
 \end{document}
